@@ -1,2 +1,2 @@
 # GroupStatisticsExcel
-分组统计Excel中的内容
+分组统计Excel中的内容并生成图表
