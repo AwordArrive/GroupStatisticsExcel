@@ -129,7 +129,7 @@ func converToCity(cellValue string, maps map[string][]string) string {
 		return "安阳"
 	}
 	if strings.Contains(cellValue, "幸福像花一样红") {
-		return "其他"
+		return "郑州"
 	}
 	if strings.Contains(cellValue, "吉祥如意") {
 		return "洛阳"
