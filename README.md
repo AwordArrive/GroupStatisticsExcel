@@ -1,2 +1,4 @@
 # GroupStatisticsExcel
 分组统计Excel中的内容并生成图表
+
+需要保证程序和excel在同一个目录下
