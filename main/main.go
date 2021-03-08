@@ -12,7 +12,6 @@ import (
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
-// const path string = "C:\\Users\\xsh\\Desktop\\问题记录表-河南-20210124.xlsx"
 var path string = "\\问题记录表-河南-20210124.xlsx"
 
 var startRowIndex int
@@ -115,6 +114,13 @@ func converToCity(cellValue string, maps map[string][]string) string {
 	}
 	if strings.Contains(cellValue, "东区-张威") {
 		return "其他"
+	}
+
+	if strings.Contains(cellValue, "张") {
+		return "商丘"
+	}
+	if strings.Contains(cellValue, "民政局") {
+		return "孟州市"
 	}
 	if strings.Contains(cellValue, "果儿") {
 		return "洛阳"
