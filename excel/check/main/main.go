@@ -2,28 +2,48 @@ package main
 
 import (
 	"fmt"
-	"regexp"
+	"os"
 	"strconv"
+	"strings"
 
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
 type result struct {
-	indexList []int
+	number int
 
-	data []string
+	indexSlice []int
+
+	dataSlice []string
 }
 
-var path string = "C:\\Users\\xsh\\Desktop\\T201.xlsx"
+// var path string = "C:\\Users\\xsh\\Desktop\\t.xlsx"
+
+var path string = "\\ttt.xlsx"
 
 func main() {
 
-	// filePath, _ := os.Getwd()
-	// path = filePath + path
+	filePath, _ := os.Getwd()
+	path = filePath + path
 	rows := getCellsValue()
-	re := checkFormatter(rows)
-	writeResult(re)
+	var resultSlice []result
+	for i, row := range rows {
 
+		if i < 3 {
+			continue
+		}
+		indexSlice := checkFormatter(row)
+		if indexSlice == nil || len(indexSlice) == 0 {
+			continue
+		}
+		result := result{i, indexSlice, row}
+		resultSlice = append(resultSlice, result)
+	}
+
+	writeResult(resultSlice)
+
+	// 重新写入以解决格式不生效的问题
+	writeResult(resultSlice)
 }
 
 func getCellsValue() [][]string {
@@ -33,50 +53,28 @@ func getCellsValue() [][]string {
 		fmt.Println(err)
 	}
 
-	rows, err := f.GetRows("T201")
+	rows, err := f.GetRows("t")
 	return rows
 }
 
-func checkFormatter(dataList [][]string) []result {
+func checkFormatter(dataList []string) []int {
 
-	resultSlice := make([]result, 1000, 5000)
-	for index, row := range dataList {
+	var indexSlice []int
+	for index, cell := range dataList {
 
-		if index < 7 {
+		if cell == "" {
 			continue
 		}
-		indexList := make([]int, 1000)
-		dataList := make([]string, 1000)
-
-		var matchResult bool
-		for index2, cell := range row {
-
-			if cell == "" {
-				continue
-			}
-
-			isMatch1, _ := regexp.MatchString(`\d*`, cell)
-			isMatch2, _ := regexp.MatchString(`\d{4}-\d{2}-\d{2}`, cell)
-			isMatch3, _ := regexp.MatchString(`\d\|^[\u4e00-\u9fa5]$`, cell)
-			isMatch4, _ := regexp.MatchString(`^[\u4e00-\u9fa5]$`, cell)
-			isMatch5, _ := regexp.MatchString(`[...]`, cell)
-
-			matchResult = isMatch1 || isMatch2 || isMatch3 || isMatch4 || isMatch5
-
-			if matchResult {
-				indexList[index] = index2
-				dataList[index] = cell
-			}
+		matchResult := strings.Contains(cell, " ")
+		if matchResult {
+			indexSlice = append(indexSlice, index)
 		}
-
-		result1 := result{indexList: indexList, data: dataList}
-		resultSlice[index] = result1
 	}
 
-	return resultSlice
+	return indexSlice
 }
 
-func writeResult(dataList []result) {
+func writeResult(resultSlice []result) {
 
 	f, err := excelize.OpenFile(path)
 	if err != nil {
@@ -84,47 +82,36 @@ func writeResult(dataList []result) {
 	}
 	sheetName := "sheet123"
 	f.NewSheet(sheetName)
+	for rowNum, result := range resultSlice {
 
-	for aaa, result := range dataList {
+		rear := append([]string{}, result.dataSlice[1:]...)
+		result.dataSlice = append(result.dataSlice[0:0], strconv.Itoa(result.number))
+		result.dataSlice = append(result.dataSlice, rear...)
 
-		if result.data == nil || len(result.data) == 0 {
-			continue
-		}
-
-		indexs := result.indexList
-		a := "A" + strconv.Itoa(aaa)
-		f.SetSheetRow(sheetName, a, &result.data)
-
-		for index := range indexs {
-
-			rowNumerPre := int2Column(index)
-			// fmt.Println(rowNumerPre)
+		rowNum = rowNum + 1
+		f.SetSheetRow(sheetName, "A"+strconv.Itoa(rowNum), &result.dataSlice)
+		for _, index := range result.indexSlice {
 
 			style, err := f.NewStyle(`{
 				"font":
-				{
-					"bold": true,
-					"italic": true,
-					"family": "Times New Roman",
-					"size": 36,
-					"color": "#DC143C"
-				}
-			}`)
+					{
+						"color": "#DC143C"
+					}
+				}`)
 			if err != nil {
 				fmt.Println(err)
 			}
-			rowNumber := rowNumerPre + strconv.Itoa(aaa)
-			f.SetCellStyle(sheetName, rowNumber, rowNumber, style)
+
+			cellNumber := int2Column(index) + strconv.Itoa(rowNum)
+			f.SetCellStyle(sheetName, cellNumber, cellNumber, style)
 		}
 	}
-
 	f.Save()
 }
 
 func int2Column(column int) string {
 
 	var digArr [100]string
-
 	mod := column % 26
 	col := (column - 1) / 26
 	for i := 0; i < col; i++ {
