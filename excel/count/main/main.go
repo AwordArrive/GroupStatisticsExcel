@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -12,14 +11,14 @@ import (
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
-var path string = "\\问题记录表-河南-20210124.xlsx"
+var path string = "C:\\Users\\xsh\\Desktop\\问题记录表-河南-20210124.xlsx"
 
 var startRowIndex int
 
 func main() {
 
-	filePath, _ := os.Getwd()
-	path = filePath + path
+	// filePath, _ := os.Getwd()
+	// path = filePath + path
 
 	cellsValue := getCellsValue()
 	maps := getCity()
@@ -90,6 +89,9 @@ func getCity() map[string][]string {
 
 func converToCity(cellValue string, maps map[string][]string) string {
 
+	if strings.Contains(cellValue, "逆流之中") {
+		return "平顶山"
+	}
 	if strings.Contains(cellValue, "JJohn") {
 		return "其他"
 	}
